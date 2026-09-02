@@ -1,0 +1,105 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.4",
+  "msteams": {
+    "width": "Full"
+  },
+  "body": [
+    {
+      "type": "Container",
+      "style": "emphasis",
+      "bleed": true,
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "🌅 Horizon 每日速递 · 2026-09-02",
+          "weight": "Bolder",
+          "size": "Large",
+          "color": "Accent"
+        },
+        {
+          "type": "TextBlock",
+          "text": "今日从 50 条源数据中精选出 25 条重要资讯",
+          "isSubtle": true,
+          "spacing": "None"
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "📰 **科技新闻 (Top 聚焦)**",
+      "weight": "Bolder",
+      "size": "Medium",
+      "spacing": "Medium"
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "⭐️ 8.0",
+          "value": "[OpenAI 发布 Astra 模型：ExploitBench 漏洞测试满分](https://openai.com/index/path-to-astra/)"
+        },
+        {
+          "title": "⭐️ 8.0",
+          "value": "[顶级 AI 开源项目转向 AI 代理自动化软件工厂](https://www.latent.space/p/pr-not-welcome)"
+        },
+        {
+          "title": "⭐️ 7.0",
+          "value": "[Claude Fable 5.1 发布：科学基准大幅提升与创意编码测试](https://simonwillison.net/2026/Sep/1/claude-fable-5-1/)"
+        },
+        {
+          "title": "⭐️ 7.0",
+          "value": "[Slotstream：在 16GB Mac 上本地运行 125B Qwen 模型](https://github.com/carloslfu/slotstream)"
+        },
+        {
+          "title": "⭐️ 7.0",
+          "value": "[索尼起诉 Anthropic：指控盗用数万首歌曲训练模型](https://www.theguardian.com/business/2026/aug/31/aanthropic-sued-alleged-theft-songs-ai-train-claude)"
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "🎨 **AI 创作者雷达 & 博客**",
+      "weight": "Bolder",
+      "size": "Medium",
+      "spacing": "Medium"
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "⭐️ 9.0",
+          "value": "[Anthropic 发布 Fable/Mythos 5.1：缓存读取价格暴降 75%](https://www.anthropic.com/claude-fable-and-mythos-5-1)"
+        },
+        {
+          "title": "⭐️ 8.0",
+          "value": "[World Labs 发布空间智能世界模型 Atlas (3D场景重建)](https://www.worldlabs.ai/blog/atlas)"
+        },
+        {
+          "title": "⭐️ 7.0",
+          "value": "[OpenAI Codex 桌面应用被曝捆绑 1.7GB 本地运行时](https://simonwillison.net/2026/Sep/1/codex-libreoffice/)"
+        },
+        {
+          "title": "⭐️ 7.0",
+          "value": "[泰克 TDS7104 示波器翻新技术深度解析](https://tomverbeure.github.io/2026/08/23/Tektronix-TDS7104-Refurbishing.html)"
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "📊 **包含分类**：科技新闻 (7篇) · 科技博客 (2篇) · 创作者雷达 (16篇)",
+      "size": "Small",
+      "isSubtle": true,
+      "spacing": "Medium"
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "👉 点击查看今日 25 篇完整报告",
+      "url": "https://thysrael.github.io/Horizon/2026/09/02/summary-zh.html",
+      "style": "positive"
+    }
+  ]
+}
