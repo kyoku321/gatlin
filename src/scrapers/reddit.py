@@ -31,11 +31,22 @@ USER_AGENT = (
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/135.0.0.0 Safari/537.36"
 )
+# Reddit serves server-rendered classic markup to feed-fetcher user agents,
+# but returns a JS-only shell (no posts) to browser user agents on blocked IPs.
+FEED_USER_AGENT = (
+    "Mozilla/5.0 (compatible; FeedFetcher-Google; "
+    "+http://www.google.com/feedfetcher.html)"
+)
 REDDIT_HEADERS = {
     "User-Agent": USER_AGENT,
     "Accept": "application/json,text/plain,*/*",
     "Accept-Language": "en-US,en;q=0.9",
     "Referer": f"{REDDIT_BASE}/",
+}
+HTML_HEADERS = {
+    **REDDIT_HEADERS,
+    "User-Agent": FEED_USER_AGENT,
+    "Accept": "text/html,application/xhtml+xml,*/*",
 }
 MAX_COMMENT_CONCURRENCY = 2
 
@@ -121,14 +132,28 @@ class RedditScraper(BaseScraper):
         rss_url = f"{REDDIT_BASE}/r/{cfg.subreddit}/{cfg.sort}/.rss"
 
         try:
+            headers = {
+                **REDDIT_HEADERS,
+                "Accept": "application/atom+xml,application/xml,text/xml,*/*",
+            }
             response = await self.client.get(
                 rss_url,
-                headers={
-                    **REDDIT_HEADERS,
-                    "Accept": "application/atom+xml,application/xml,text/xml,*/*",
-                },
+                headers=headers,
                 follow_redirects=True,
             )
+            if response.status_code == 429:
+                retry_after = int(response.headers.get("Retry-After", 5))
+                logger.warning(
+                    "Reddit RSS rate limited for r/%s, retrying after %ds",
+                    cfg.subreddit,
+                    retry_after,
+                )
+                await asyncio.sleep(retry_after)
+                response = await self.client.get(
+                    rss_url,
+                    headers=headers,
+                    follow_redirects=True,
+                )
             response.raise_for_status()
         except httpx.HTTPError as e:
             logger.warning("Reddit RSS fallback failed for r/%s: %s", cfg.subreddit, e)
@@ -185,10 +210,7 @@ class RedditScraper(BaseScraper):
             response = await self.client.get(
                 url,
                 params=params,
-                headers={
-                    **REDDIT_HEADERS,
-                    "Accept": "text/html,application/xhtml+xml,*/*",
-                },
+                headers=HTML_HEADERS,
                 follow_redirects=True,
             )
             response.raise_for_status()
@@ -432,10 +454,7 @@ class RedditScraper(BaseScraper):
             response = await self.client.get(
                 url,
                 params=params,
-                headers={
-                    **REDDIT_HEADERS,
-                    "Accept": "text/html,application/xhtml+xml,*/*",
-                },
+                headers=HTML_HEADERS,
                 follow_redirects=True,
             )
             response.raise_for_status()

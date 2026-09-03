@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 import httpx
 
 from src.models import RedditConfig, RedditSubredditConfig, RedditUserConfig
-from src.scrapers.reddit import REDDIT_HEADERS, RedditScraper
+from src.scrapers.reddit import FEED_USER_AGENT, REDDIT_HEADERS, RedditScraper
 
 
 def _make_config(fetch_comments: int = 1, profile: str | None = None) -> RedditConfig:
@@ -118,7 +118,7 @@ def _old_comments_html() -> str:
     """
 
 
-def test_reddit_fetch_uses_browser_like_headers():
+def test_reddit_fetch_uses_feed_user_agent_for_html():
     requests = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -134,7 +134,9 @@ def test_reddit_fetch_uses_browser_like_headers():
 
     assert len(requests) == 1
     assert requests[0].url.host == "old.reddit.com"
-    assert requests[0].headers["user-agent"] == REDDIT_HEADERS["User-Agent"]
+    # Feed-fetcher UA: Reddit serves server-rendered markup to feed agents,
+    # but a JS-only shell to browser UAs on blocked IPs.
+    assert requests[0].headers["user-agent"] == FEED_USER_AGENT
     assert requests[0].headers["accept-language"] == REDDIT_HEADERS["Accept-Language"]
     assert requests[0].headers["referer"] == REDDIT_HEADERS["Referer"]
 
@@ -238,6 +240,49 @@ def test_reddit_listing_old_failure_falls_back_to_json_then_rss():
     assert items[0].metadata["subreddit"] == "LocalLLaMA"
     assert items[0].metadata["fallback"] == "rss"
     assert items[0].profile == "rss-profile"
+
+
+def test_reddit_listing_rss_429_retries_after_retry_after():
+    rss_requests = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal rss_requests
+        if request.url.host == "old.reddit.com":
+            return httpx.Response(500, text="old reddit unavailable")
+        if request.url.path.endswith("/hot.json"):
+            return httpx.Response(403, text="blocked")
+        if request.url.path.endswith("/hot/.rss"):
+            rss_requests += 1
+            if rss_requests == 1:
+                return httpx.Response(429, headers={"Retry-After": "0"})
+            return httpx.Response(
+                200,
+                text="""
+                <?xml version="1.0" encoding="UTF-8"?>
+                <feed xmlns="http://www.w3.org/2005/Atom">
+                  <entry>
+                    <id>t3_rss429</id>
+                    <title>RSS post after retry</title>
+                    <author><name>rss_author</name></author>
+                    <link href="https://www.reddit.com/r/LocalLLaMA/comments/rss429/test/" />
+                    <updated>2030-01-01T00:00:00+00:00</updated>
+                    <summary type="html">&lt;p&gt;body&lt;/p&gt;</summary>
+                  </entry>
+                </feed>
+                """,
+            )
+        raise AssertionError(f"unexpected url: {request.url}")
+
+    transport = httpx.MockTransport(handler)
+    client = httpx.AsyncClient(transport=transport)
+    scraper = RedditScraper(_make_config(fetch_comments=0), client)
+
+    items = asyncio.run(scraper.fetch(datetime(2029, 12, 31, tzinfo=timezone.utc)))
+    asyncio.run(client.aclose())
+
+    assert rss_requests == 2
+    assert len(items) == 1
+    assert items[0].title == "RSS post after retry"
 
 
 def test_reddit_user_profile_propagates() -> None:
