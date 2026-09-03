@@ -31,7 +31,24 @@ docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest
 
 ## 安装
 
-1. 准备 values 文件，把真实配置填进 `secrets`：
+### 方式 A：`--set-file` 直接读取文件（推荐）
+
+在仓库根目录执行，`--set-file` 会把文件内容原样读进 values，不用手写大段文本：
+
+```bash
+helm install gatlin ./helm_chart -n gatlin --create-namespace \
+  --set-file secrets.env=.env \
+  --set-file secrets.configJson=data/config.json
+
+# 后续升级（配置变更后重新执行即可）
+helm upgrade gatlin ./helm_chart -n gatlin \
+  --set-file secrets.env=.env \
+  --set-file secrets.configJson=data/config.json
+```
+
+### 方式 B：手写 values 文件
+
+把真实配置填进 `secrets`（适合不想把文件路径带进命令的场景）：
 
 ```yaml
 secrets:
@@ -44,23 +61,19 @@ secrets:
     { "ai": { ... } }
 ```
 
-> `configJson` 会在 `helm install` 时做 JSON 校验，非法 JSON 直接安装失败。
-> `secrets.env` 为空时安装成功但 cron 会跑失败，NOTES 会打印警告。
-
-2. 安装 / 升级：
+然后：
 
 ```bash
-# 首次安装
 helm install gatlin ./helm_chart -n gatlin --create-namespace -f my-values.yaml
-
-# 后续升级（values 或 chart 有变更时）
-helm upgrade gatlin ./helm_chart -n gatlin -f my-values.yaml
-
-# 推送新镜像后，让 viewer 拉取新 latest（cron 每次运行都是新 Pod，无需操作）
-kubectl -n gatlin rollout restart deployment/gatlin-viewer
 ```
 
-3. 手动触发首次运行（PVC 初始为空，页面会显示"暂无内容"）：
+> `configJson` 会在 `helm install` 时做 JSON 校验，非法 JSON 直接安装失败。
+> `secrets.env` 为空时安装成功但 cron 会跑失败，NOTES 会打印警告。
+> 两种方式可同时使用，`--set-file` 优先级高于 `-f`。
+
+### 首次运行（手动触发）
+
+PVC 初始为空，页面会显示“暂无内容”，先手动跑一次：
 
 ```bash
 kubectl -n gatlin create job --from=cronjob/gatlin-cron gatlin-cron-manual-1
@@ -68,6 +81,12 @@ kubectl -n gatlin logs -f job/gatlin-cron-manual-1
 ```
 
 跑完后日报出现在 viewer 页面上。
+
+> 推送新镜像后，让 viewer 拉取新 latest（cron 每次运行都是新 Pod，无需操作）：
+>
+> ```bash
+> kubectl -n gatlin rollout restart deployment/gatlin-viewer
+> ```
 
 ## 主要 values
 
