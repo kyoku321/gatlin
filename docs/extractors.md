@@ -1,8 +1,3 @@
----
-layout: default
-title: Content Extractors
----
-
 # Content Extractors
 
 Extractors fetch and parse the full text of a linked article, replacing the brief excerpt a feed normally provides. They are opt-in per RSS source via the `content_extractor` field.

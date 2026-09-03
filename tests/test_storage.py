@@ -196,7 +196,7 @@ def test_save_daily_summary_defensively_rejects_path_escape(tmp_path):
 
 def test_safe_output_path_rejects_escape_from_other_output_roots(tmp_path):
     with pytest.raises(ValueError, match="escapes intended root"):
-        safe_output_path(tmp_path / "docs" / "_posts", "../../../outside.md")
+        safe_output_path(tmp_path / "docs" / "output", "../../../outside.md")
 
 
 def test_save_daily_summary_replace_failure_preserves_destination(tmp_path, monkeypatch):

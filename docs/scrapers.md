@@ -1,8 +1,3 @@
----
-layout: default
-title: Source Scrapers
----
-
 # Source Scrapers
 
 Horizon fetches content from multiple source types. All scrapers inherit from `BaseScraper`, share an async HTTP client, and implement a `fetch(since)` method that returns a list of `ContentItem` objects. Sources are fetched concurrently via `asyncio.gather`.

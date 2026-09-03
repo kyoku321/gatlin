@@ -1,8 +1,3 @@
----
-layout: default
-title: Processing Profiles
----
-
 # Processing Profiles
 
 Processing profiles define how Horizon matches, analyzes, enriches, and renders

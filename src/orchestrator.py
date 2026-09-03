@@ -339,47 +339,6 @@ class HorizonOrchestrator:
                     f"{self.icons['save']} Saved {lang.upper()} summary to: {summary_path}\n"
                 )
 
-                # Copy to docs/ for GitHub Pages
-                try:
-                    from pathlib import Path
-
-                    post_filename = f"{report_date}-summary-{lang}.md"
-                    posts_dir = Path("docs/_posts")
-                    posts_dir.mkdir(parents=True, exist_ok=True)
-
-                    dest_path = safe_output_path(posts_dir, post_filename)
-
-                    # Add Jekyll front matter
-                    front_matter = (
-                        "---\n"
-                        "layout: default\n"
-                        f"title: \"Horizon Summary: {report_date} ({lang.upper()})\"\n"
-                        f"date: {report_date}\n"
-                        f"lang: {lang}\n"
-                        "---\n\n"
-                    )
-
-                    # Strip leading H1 header to avoid duplication with Jekyll title
-                    summary_content = summary
-                    first_line = summary_content.strip().split("\n")[0]
-                    if first_line.startswith("# "):
-                        parts = summary_content.split("\n", 1)
-                        if len(parts) > 1:
-                            summary_content = parts[1].strip()
-
-                    with open(dest_path, "w", encoding="utf-8") as f:
-                        f.write(front_matter + summary_content)
-
-                    self.console.print(
-                        f"{self.icons['document']} Copied {lang.upper()} summary "
-                        f"to GitHub Pages: {dest_path}\n"
-                    )
-                except Exception as e:
-                    self.console.print(
-                        f"[yellow]{self.icons['warning']} Failed to copy "
-                        f"{lang.upper()} summary to docs/: {e}[/yellow]\n"
-                    )
-
                 # Send email if configured (suppressed in backfill mode unless forced)
                 if (
                     notify

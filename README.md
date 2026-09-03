@@ -81,7 +81,6 @@ But Horizon is not just another summarizer. AI is great at reducing noise, but n
 - **🔍 Understand the Background** — Add web-researched context for unfamiliar concepts, companies, projects, and technical terms
 - **💬 Read the Conversation** — Collect and summarize community comments from Hacker News, Reddit, and other supported sources
 - **🌐 Publish in Two Languages** — Generate English and Chinese daily briefings from the same source set
-- **📝 Ship a Daily Site** — Publish generated Markdown as a GitHub Pages daily briefing site
 - **📧 Deliver by Email** — Run a self-hosted SMTP/IMAP newsletter with automatic subscribe and unsubscribe handling
 - **🔔 Push to Chat or Automations** — Send templated results to Feishu/Lark, DingTalk, Slack, Discord, or custom webhook endpoints
 - **🧙 Start From Your Interests** — Use the setup wizard to generate a personalized source configuration
@@ -166,7 +165,7 @@ flowchart LR
 4. **Analyze & Filter** — Select a profile, analyze each item with its prompt, and apply the configured user threshold.
 5. **Enrich** — Generate the profile's configured content blocks, using only tools allowed for each block.
 6. **Summarize** — Render localized titles, leads, sections, and cited sources as a Markdown briefing.
-7. **Deliver** — Publish the result to GitHub Pages, email, webhooks such as Feishu, MCP, or local files.
+7. **Deliver** — Publish the result to email, webhooks such as Feishu, MCP, or local files.
 
 ## Quick Start
 
@@ -347,10 +346,6 @@ docker compose run --rm horizon [OPTIONS]
 
 `--data-dir` changes the state directory, including summaries, subscribers, and the default config location; `--config` changes only the config file. The generated report is saved to `data/summaries/` (or `<data-dir>/summaries/` if `--data-dir` is set). See [Configuration Paths](docs/configuration.md#configuration-paths) for combining both flags and initializing a custom config location.
 
-### 4. Automate (Optional)
-
-Horizon works great as a **GitHub Actions** cron job. See [`.github/workflows/daily-summary.yml`](.github/workflows/daily-summary.yml) for a ready-to-use workflow that generates and deploys your daily briefing to GitHub Pages automatically.
-
 ## Supported Sources
 
 | Source | What it fetches | Comments |
@@ -369,7 +364,6 @@ Horizon can publish or deliver the generated briefing in several ways:
 
 | Channel | What it does |
 |---------|--------------|
-| **GitHub Pages Daily Site** | Copies generated Markdown into `docs/` so GitHub Pages can publish a daily-updated briefing site |
 | **Email Subscription** | Sends the daily briefing to subscribers and handles subscribe/unsubscribe requests through SMTP/IMAP |
 | **Webhook Notification** | Pushes success or failure results to Feishu/Lark, DingTalk, Slack, Discord, or any custom webhook endpoint |
 | **MCP Server** | Exposes Horizon pipeline steps as tools so AI assistants can fetch, score, filter, enrich, summarize, and run the full workflow |
@@ -389,7 +383,7 @@ Horizon is an open-source project maintained in spare time. If you'd like to sup
 
 | Guide | Description |
 |-------|-------------|
-| [Configuration](docs/configuration.md) | AI providers, sources, profiles, filtering, email, webhook, GitHub Pages, and MCP setup |
+| [Configuration](docs/configuration.md) | AI providers, sources, profiles, filtering, email, webhook, and MCP setup |
 | [Processing Profiles](docs/profiles.md) | Profile routing, prompts, runtime filtering preferences, enrichment blocks, and tools |
 | [Scoring](docs/scoring.md) | How Horizon evaluates and ranks news items |
 | [Scrapers](docs/scrapers.md) | Source scraper details and extension notes |
@@ -398,7 +392,7 @@ Horizon is an open-source project maintained in spare time. If you'd like to sup
 
 ## Project Status
 
-Horizon already supports the full daily briefing loop: multi-source collection, profile-driven analysis and enrichment, deduplication, comment summaries, bilingual generation, GitHub Pages publishing, email delivery, webhook delivery, Docker deployment, MCP integration, and the setup wizard.
+Horizon already supports the full daily briefing loop: multi-source collection, profile-driven analysis and enrichment, deduplication, comment summaries, bilingual generation, email delivery, webhook delivery, Docker deployment, MCP integration, and the setup wizard.
 
 Planned improvements:
 

@@ -82,7 +82,6 @@
 - **🔍 补全背景知识** — 为陌生概念、公司、项目和技术术语补充网络搜索得到的背景解释
 - **💬 读到社区声音** — 收集并总结 Hacker News、Reddit 等来源的评论讨论
 - **🌐 生成双语日报** — 基于同一组信息源生成英文和中文日报
-- **📝 发布日报站点** — 将生成的 Markdown 发布为 GitHub Pages 静态日报站点
 - **📧 邮件分发** — 运行自托管 SMTP/IMAP 邮件列表，自动处理订阅与退订
 - **🔔 推送到聊天和自动化工具** — 将模板化结果发送到飞书、钉钉、Slack、Discord 或自定义 Webhook
 - **🧙 从兴趣开始配置** — 通过交互式向导根据你的兴趣生成个性化信息源配置
@@ -167,7 +166,7 @@ flowchart LR
 4. **分析与过滤** — 选择处理配置文件，按其提示词分析内容并应用用户配置的阈值。
 5. **丰富** — 生成配置文件定义的内容区块，每个区块只能调用已声明的工具。
 6. **总结** — 将本地化标题、导语、章节和引用来源渲染为 Markdown 日报。
-7. **分发** — 将结果发布到 GitHub Pages、邮件、飞书等 webhook、MCP 或本地文件。
+7. **分发** — 将结果发布到邮件、飞书等 webhook、MCP 或本地文件。
 
 ## 赞助
 
@@ -334,10 +333,6 @@ docker compose run --rm horizon [OPTIONS]
 
 `--data-dir` 会更改状态目录，包括日报、订阅者文件和默认配置位置；`--config` 只更改配置文件。生成的日报将保存在 `data/summaries/` 目录中（如设置了 `--data-dir`，则保存在 `<data-dir>/summaries/`）。两处位置都要修改，或需要初始化自定义配置位置时，请查看[配置路径](docs/configuration.md#configuration-paths)。
 
-### 4. 自动化（可选）
-
-Horizon 非常适合作为 **GitHub Actions** 定时任务运行。查看 [`.github/workflows/daily-summary.yml`](.github/workflows/daily-summary.yml) 获取现成的工作流配置，可自动生成日报并部署到 GitHub Pages。
-
 ## 支持的信息源
 
 | 信息源 | 抓取内容 | 评论收集 |
@@ -356,7 +351,6 @@ Horizon 支持通过多种方式发布和分发生成的日报：
 
 | 方式 | 作用 |
 |------|------|
-| **GitHub Pages 日报站点** | 将生成的 Markdown 复制到 `docs/`，通过 GitHub Pages 发布为每日更新的静态日报站点 |
 | **邮件订阅** | 通过 SMTP/IMAP 向订阅者发送日报，并自动处理订阅/退订请求 |
 | **Webhook 通知** | 在成功或失败时将结果推送到飞书、钉钉、Slack、Discord 或任意 Webhook 端点 |
 | **MCP Server** | 将抓取、打分、过滤、富化、摘要和完整 pipeline 暴露为工具，供 AI 助手调用 |
@@ -367,7 +361,7 @@ Horizon 支持通过多种方式发布和分发生成的日报：
 
 | 文档 | 内容 |
 |------|------|
-| [配置指南](docs/configuration.md) | AI 模型、信息源、处理配置文件、过滤、邮件、Webhook、GitHub Pages 和 MCP 配置 |
+| [配置指南](docs/configuration.md) | AI 模型、信息源、处理配置文件、过滤、邮件、Webhook 和 MCP 配置 |
 | [处理配置文件](docs/profiles.md) | 配置文件路由、提示词、运行时筛选偏好、丰富区块和工具 |
 | [评分机制](docs/scoring.md) | Horizon 如何评估和排序新闻 |
 | [抓取器](docs/scrapers.md) | 信息源抓取器说明和扩展细节 |
@@ -376,7 +370,7 @@ Horizon 支持通过多种方式发布和分发生成的日报：
 
 ## 项目状态
 
-Horizon 已经支持完整的日报流程：多源抓取、基于配置文件的分析与内容丰富、去重、评论摘要、双语生成、GitHub Pages 发布、邮件分发、Webhook 推送、Docker 部署、MCP 集成和配置向导。
+Horizon 已经支持完整的日报流程：多源抓取、基于配置文件的分析与内容丰富、去重、评论摘要、双语生成、邮件分发、Webhook 推送、Docker 部署、MCP 集成和配置向导。
 
 计划中的改进：
 

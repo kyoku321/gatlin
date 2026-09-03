@@ -1,8 +1,3 @@
----
-layout: default
-title: Scoring System
----
-
 # Scoring System
 
 After fetching content, Horizon resolves a processing profile for each item and
