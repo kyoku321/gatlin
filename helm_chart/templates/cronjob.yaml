@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-cron
+  labels:
+    app: {{ .Release.Name }}-cron
+spec:
+  schedule: {{ .Values.cron.schedule | quote }}
+  timeZone: {{ .Values.cron.timeZone | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.cron.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cron.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: {{ .Release.Name }}-cron
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cron
+              image: "{{ .Values.cron.image.repository }}:{{ .Values.cron.image.tag }}"
+              imagePullPolicy: {{ .Values.cron.image.pullPolicy }}
+              # The image entrypoint is `uv run horizon`; re-run it via sh to
+              # compute yesterday's UTC date (matches the --date UTC semantics).
+              command: ["/bin/sh", "-c"]
+              args:
+                - uv run horizon --date "$(date -u -d yesterday +%F)"
+              resources:
+                {{- toYaml .Values.cron.resources | nindent 16 }}
+              volumeMounts:
+                - name: data
+                  mountPath: /app/data
+                - name: secret
+                  mountPath: /app/.env
+                  subPath: env
+                - name: secret
+                  mountPath: /app/data/config.json
+                  subPath: config.json
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: {{ .Release.Name }}-data
+            - name: secret
+              secret:
+                secretName: {{ .Release.Name }}-secret

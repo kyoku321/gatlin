@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gatlin
+description: Gatlin (Horizon) daily briefing — CronJob generating daily digests + nginx viewer with Ingress, sharing a ReadWriteMany PVC
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

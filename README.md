@@ -208,7 +208,7 @@ git clone https://github.com/Thysrael/Horizon.git
 cd Horizon
 
 # Optional: build with comma-separated extras before the first run
-docker compose build --build-arg EXTRAS=trafilatura horizon
+docker build --build-arg EXTRAS=trafilatura -t horizon .
 ```
 
 Multiple extras may be supplied as `EXTRAS=trafilatura,openbb`. The `twitter` extra also requires a Playwright browser and system packages, which the current Dockerfile does not install.
@@ -332,7 +332,9 @@ uv run horizon [OPTIONS]
 **B. Docker**
 
 ```bash
-docker compose run --rm horizon [OPTIONS]
+docker run --rm -it \
+  -v "$PWD/data:/app/data" -v "$PWD/.env:/app/.env:ro" -e TZ=UTC \
+  horizon [OPTIONS]
 ```
 
 | Option | Default | Description |

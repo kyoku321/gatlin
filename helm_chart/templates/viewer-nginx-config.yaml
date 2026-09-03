@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-viewer-nginx
+  labels:
+    app: {{ .Release.Name }}-viewer
+data:
+  default.conf: |
+    server {
+        listen 80;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # JSON directory listing of generated briefings (autoindex_format json, nginx >= 1.25)
+        location = /summaries/ {
+            alias /data/summaries/;
+            autoindex on;
+            autoindex_format json;
+        }
+
+        # Only single .md file names (no path segments -> no traversal),
+        # so the rest of the data volume (config.json, cookies, seen.json, ...)
+        # is unreachable.
+        location ~* ^/summaries/([^/]+\.md)$ {
+            alias /data/summaries/$1;
+            default_type text/markdown;
+            charset utf-8;
+        }
+
+        # Anything else under /summaries/ -> 404
+        location /summaries/ {
+            return 404;
+        }
+    }

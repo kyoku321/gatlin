@@ -1,0 +1,26 @@
+{{- $env := .Values.secrets.env | default "" }}
+
+Gatlin (Horizon) has been installed.
+
+Viewer:
+{{- if .Values.ingress.enabled }}
+{{- $tls := .Values.ingress.tls | default list }}
+{{- range .Values.ingress.hosts }}
+  * {{ if $tls }}https{{ else }}http{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+  * kubectl port-forward svc/{{ .Release.Name }}-viewer 8080:{{ .Values.viewer.containerPort }}
+{{- end }}
+
+Cron:
+  * Schedule: {{ .Values.cron.schedule }} ({{ .Values.cron.timeZone }})
+  * Inspect:  kubectl cronjob get {{ .Release.Name }}-cron -o wide
+  * Trigger the first run now (writes yesterday's UTC digest):
+      kubectl create job --from=cronjob/{{ .Release.Name }}-cron {{ .Release.Name }}-cron-manual-1
+  * Follow logs:
+      kubectl logs -f job/{{ .Release.Name }}-cron-manual-1
+
+{{- if not (trim $env) }}
+WARNING: secrets.env is empty — the cron job will fail until you set your API
+keys. Update values (secrets.env) and run `helm upgrade`, then trigger a run.
+{{- end }}

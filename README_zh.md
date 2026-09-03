@@ -218,7 +218,7 @@ git clone https://github.com/Thysrael/Horizon.git
 cd horizon
 
 # 可选：首次运行前构建逗号分隔的 extras
-docker compose build --build-arg EXTRAS=trafilatura horizon
+docker build --build-arg EXTRAS=trafilatura -t horizon .
 ```
 
 多个 extra 可写为 `EXTRAS=trafilatura,openbb`。`twitter` extra 还需要 Playwright 浏览器及系统依赖，当前 Dockerfile 不会安装这些组件。
@@ -319,7 +319,9 @@ uv run horizon [OPTIONS]
 **B. Docker**
 
 ```bash
-docker compose run --rm horizon [OPTIONS]
+docker run --rm -it \
+  -v "$PWD/data:/app/data" -v "$PWD/.env:/app/.env:ro" -e TZ=UTC \
+  horizon [OPTIONS]
 ```
 
 | 选项 | 默认值 | 说明 |

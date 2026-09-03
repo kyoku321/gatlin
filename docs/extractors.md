@@ -49,7 +49,7 @@ Uses the [trafilatura](https://trafilatura.readthedocs.io/) library to extract m
 uv sync --extra trafilatura
 
 # Docker
-docker compose build --build-arg EXTRAS=trafilatura horizon
+docker build --build-arg EXTRAS=trafilatura -t horizon .
 ```
 
 **Config fields**:

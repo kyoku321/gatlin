@@ -209,7 +209,7 @@ git clone https://github.com/Thysrael/Horizon.git
 cd Horizon
 
 # オプション: 初回実行前にカンマ区切りのextrasを含めてビルド
-docker compose build --build-arg EXTRAS=trafilatura horizon
+docker build --build-arg EXTRAS=trafilatura -t horizon .
 ```
 
 複数のextraは`EXTRAS=trafilatura,openbb`のように指定できます。`twitter` extraにはPlaywrightブラウザとシステムパッケージも必要ですが、現在のDockerfileはそれらをインストールしません。
@@ -327,7 +327,9 @@ uv run horizon [OPTIONS]
 **B. Docker**
 
 ```bash
-docker compose run --rm horizon [OPTIONS]
+docker run --rm -it \
+  -v "$PWD/data:/app/data" -v "$PWD/.env:/app/.env:ro" -e TZ=UTC \
+  horizon [OPTIONS]
 ```
 
 | オプション | デフォルト | 説明 |

@@ -1,0 +1,63 @@
+cron:
+  image:
+    repository: core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin
+    tag: "latest"
+    # Always re-pull: "latest" is mutable, IfNotPresent would keep stale images.
+    pullPolicy: Always
+  # Daily run time, interpreted in `timeZone` (Kubernetes 1.26+).
+  schedule: "0 4 * * *"
+  timeZone: "Asia/Tokyo"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+viewer:
+  image:
+    repository: core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer
+    tag: "latest"
+    # Always re-pull: "latest" is mutable, IfNotPresent would keep stale images.
+    pullPolicy: Always
+  replicaCount: 1
+  containerPort: 80
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+
+persistence:
+  storageClass: "basic"
+  size: 5Gi
+  accessModes:
+    - ReadWriteMany
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: gatlin.gpu-k8s.cloudcore-tu.net
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# Rendered into a Secret mounted by the CronJob:
+#   env         -> /app/.env         (API keys, SMTP, webhook secrets)
+#   config.json -> /app/data/config.json
+secrets:
+  # Paste the full contents of your .env file here (one KEY=value per line).
+  env: |
+    # OPENAI_API_KEY=...
+  # Paste the full contents of your data/config.json here.
+  # Validated as a JSON object at helm install time.
+  configJson: |
+    {}
