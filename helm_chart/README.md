@@ -23,7 +23,7 @@ docker buildx build \
 # viewer 镜像（viewer/ 目录，marked 已 vendor，构建不需要外网）
 docker buildx build \
   --platform=linux/amd64 \
-  --file Dockerfile -t core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest viewer/
+  --file viewer/Dockerfile -t core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest viewer/
 
 docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin:latest
 docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest
