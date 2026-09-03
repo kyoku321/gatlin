@@ -16,11 +16,16 @@
 
 ```bash
 # cron 镜像（仓库根 Dockerfile）
-docker build -t core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin:latest .
-docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin:latest
+docker buildx build \
+  --platform=linux/amd64 \
+  --file Dockerfile -t core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin:latest .
 
 # viewer 镜像（viewer/ 目录，marked 已 vendor，构建不需要外网）
-docker build -t core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest viewer/
+docker buildx build \
+  --platform=linux/amd64 \
+  --file Dockerfile -t core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest viewer/
+
+docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin:latest
 docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest
 ```
 
@@ -42,10 +47,17 @@ secrets:
 > `configJson` 会在 `helm install` 时做 JSON 校验，非法 JSON 直接安装失败。
 > `secrets.env` 为空时安装成功但 cron 会跑失败，NOTES 会打印警告。
 
-2. 安装：
+2. 安装 / 升级：
 
 ```bash
+# 首次安装
 helm install gatlin ./helm_chart -n gatlin --create-namespace -f my-values.yaml
+
+# 后续升级（values 或 chart 有变更时）
+helm upgrade gatlin ./helm_chart -n gatlin -f my-values.yaml
+
+# 推送新镜像后，让 viewer 拉取新 latest（cron 每次运行都是新 Pod，无需操作）
+kubectl -n gatlin rollout restart deployment/gatlin-viewer
 ```
 
 3. 手动触发首次运行（PVC 初始为空，页面会显示"暂无内容"）：
