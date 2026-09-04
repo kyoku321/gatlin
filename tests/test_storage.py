@@ -215,6 +215,20 @@ def test_save_daily_summary_replace_failure_preserves_destination(tmp_path, monk
     assert list(destination.parent.glob(f".{destination.name}.*.tmp")) == []
 
 
+def test_save_daily_summary_writes_world_readable_file(tmp_path):
+    # The viewer pod's non-root nginx worker must read summaries from the
+    # shared PVC; tempfile's default 0o600 caused HTTP 403 there.
+    storage = StorageManager(data_dir=str(tmp_path))
+    destination = storage.save_daily_summary("2026-07-13", "# report")
+    assert destination.stat().st_mode & 0o777 == 0o644
+
+
+def test_atomic_write_text_defaults_to_owner_only(tmp_path):
+    path = tmp_path / "secret.json"
+    file_utils._atomic_write_text(path, "{}")
+    assert path.stat().st_mode & 0o777 == 0o600
+
+
 def test_save_subscribers_replace_failure_preserves_destination(tmp_path, monkeypatch):
     storage = StorageManager(data_dir=str(tmp_path))
 

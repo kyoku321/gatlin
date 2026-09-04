@@ -125,7 +125,9 @@ class StorageManager:
         filename = f"horizon-{date}-{language}.md"
         filepath = safe_output_path(self.summaries_dir, filename)
 
-        _atomic_write_text(filepath, markdown)
+        # 0o644: the viewer pod's non-root nginx worker must be able to read
+        # these files from the shared PVC (tempfile defaults to 0o600).
+        _atomic_write_text(filepath, markdown, mode=0o644)
 
         return filepath
 

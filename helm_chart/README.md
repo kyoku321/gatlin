@@ -36,12 +36,12 @@ docker push core.harbor.cloudcore-tu.net/aggpf/gatlin/gatlin-viewer:latest
 在仓库根目录执行，`--set-file` 会把文件内容原样读进 values，不用手写大段文本：
 
 ```bash
-helm install gatlin ./helm_chart -n gatlin --create-namespace \
+helm install gatlin ./helm_chart -n ug-aggpf-common \
   --set-file secrets.env=.env \
   --set-file secrets.configJson=data/config.json
 
 # 后续升级（配置变更后重新执行即可）
-helm upgrade gatlin ./helm_chart -n gatlin \
+helm upgrade gatlin ./helm_chart -n ug-aggpf-common \
   --set-file secrets.env=.env \
   --set-file secrets.configJson=data/config.json
 ```
@@ -64,7 +64,7 @@ secrets:
 然后：
 
 ```bash
-helm install gatlin ./helm_chart -n gatlin --create-namespace -f my-values.yaml
+helm install gatlin ./helm_chart -f my-values.yaml
 ```
 
 > `configJson` 会在 `helm install` 时做 JSON 校验，非法 JSON 直接安装失败。
@@ -76,8 +76,8 @@ helm install gatlin ./helm_chart -n gatlin --create-namespace -f my-values.yaml
 PVC 初始为空，页面会显示“暂无内容”，先手动跑一次：
 
 ```bash
-kubectl -n gatlin create job --from=cronjob/gatlin-cron gatlin-cron-manual-1
-kubectl -n gatlin logs -f job/gatlin-cron-manual-1
+kubectl create job --from=cronjob/gatlin-cron gatlin-cron-manual-1
+kubectl logs -f job/gatlin-cron-manual-1
 ```
 
 跑完后日报出现在 viewer 页面上。
@@ -85,7 +85,7 @@ kubectl -n gatlin logs -f job/gatlin-cron-manual-1
 > 推送新镜像后，让 viewer 拉取新 latest（cron 每次运行都是新 Pod，无需操作）：
 >
 > ```bash
-> kubectl -n gatlin rollout restart deployment/gatlin-viewer
+> kubectl rollout restart deployment/gatlin-viewer
 > ```
 
 ## 主要 values
@@ -112,7 +112,7 @@ kubectl -n gatlin logs -f job/gatlin-cron-manual-1
 ## 卸载
 
 ```bash
-helm uninstall gatlin -n gatlin
+helm uninstall gatlin
 # PVC 带 resource-policy: keep，uninstall 不会删除数据；
-# 如需彻底清理：kubectl -n gatlin delete pvc gatlin-data
+# 如需彻底清理：kubectl delete pvc gatlin-data
 ```

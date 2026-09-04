@@ -25,9 +25,11 @@ spec:
               imagePullPolicy: {{ .Values.cron.image.pullPolicy }}
               # The image entrypoint is `uv run horizon`; re-run it via sh to
               # compute yesterday's UTC date (matches the --date UTC semantics).
+              # chmod keeps summaries world-readable so the viewer pod's
+              # non-root nginx worker can serve them (also repairs any legacy 600 files).
               command: ["/bin/sh", "-c"]
               args:
-                - uv run horizon --date "$(date -u -d yesterday +%F)"
+                - uv run horizon --date "$(date -u -d yesterday +%F)" && chmod -R a+rX /app/data/summaries
               resources:
                 {{- toYaml .Values.cron.resources | nindent 16 }}
               volumeMounts:

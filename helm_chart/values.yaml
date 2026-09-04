@@ -42,13 +42,18 @@ persistence:
 ingress:
   enabled: true
   className: nginx
-  annotations: {}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    cert-manager.io/cluster-issuer: "letsencrypt"
   hosts:
-    - host: gatlin.gpu-k8s.cloudcore-tu.net
+    - host: aggpf-gatlin.gpu-k8s.cloudcore-tu.net
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls:
+    - hosts:
+        - aggpf-gatlin.gpu-k8s.cloudcore-tu.net
+      secretName: gatlin-tls
 
 # Rendered into a Secret mounted by the CronJob:
 #   env         -> /app/.env         (API keys, SMTP, webhook secrets)
