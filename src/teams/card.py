@@ -34,6 +34,8 @@ ITEM_RE = re.compile(
 )
 # > 从 54 条内容中筛选出 23 条重要资讯。
 OVERVIEW_RE = re.compile(r"^> +从\s*(\d+)\s*条.+?筛选出\s*(\d+)\s*条", re.MULTILINE)
+# > 全 81 件のコンテンツから 44 件の重要ニュースを厳選しました。
+OVERVIEW_RE_JA = re.compile(r"^> +.*?(\d+)\s*件.*?(\d+)\s*件", re.MULTILINE)
 # # Horizon 每日速递 - 2026-09-02
 DATE_RE = re.compile(r"^# +.+?\s*-\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 
@@ -48,6 +50,36 @@ CATEGORY_ICONS = {
     "科技博客": "✍️",
     "财经新闻": "💹",
     "AI 创作者雷达": "🎨",
+    "テクノロジーニュース": "📰",
+    "テクノロジーブログ": "✍️",
+    "金融ニュース": "💹",
+    "AI クリエイター・レーダー": "🎨",
+}
+
+# Card chrome (subtitle / footer / button) per language. ``{counts}`` is the
+# joined "Category (N<unit>)" list; the unit keeps the counter native.
+CARD_TEXTS = {
+    "zh": {
+        "subtitle": "今日从 {total} 条源数据中精选出 {picked} 条重要资讯",
+        "subtitle_no_total": "今日精选出 {picked} 条重要资讯",
+        "footer": "📊 包含分类: {counts}",
+        "count_unit": "篇",
+        "button": "👉 点击查看今日 {picked} 篇完整报告",
+    },
+    "ja": {
+        "subtitle": "本日 {total} 件のコンテンツから {picked} 件の重要ニュースを厳選",
+        "subtitle_no_total": "本日 {picked} 件の重要ニュースを厳選",
+        "footer": "📊 区分: {counts}",
+        "count_unit": "件",
+        "button": "👉 今日の {picked} 件の完全レポートを見る",
+    },
+    "en": {
+        "subtitle": "{picked} important stories picked from {total} sources today",
+        "subtitle_no_total": "{picked} important stories picked today",
+        "footer": "📊 Categories: {counts}",
+        "count_unit": "",
+        "button": "👉 View today's full report ({picked} items)",
+    },
 }
 
 DEFAULT_WEBHOOK_ENV = "HORIZON_TEAMS_WEBHOOK_URL"
@@ -59,7 +91,7 @@ def parse_summary(md: str) -> dict:
     date = date_m.group(1) if date_m else ""
 
     total = picked = None
-    ov = OVERVIEW_RE.search(md)
+    ov = OVERVIEW_RE.search(md) or OVERVIEW_RE_JA.search(md)
     if ov:
         total, picked = int(ov.group(1)), int(ov.group(2))
 
@@ -122,7 +154,11 @@ def build_card(
     date = parsed["date"]
     sections = parsed["sections"]
     total = parsed.get("total")
-    picked = parsed.get("picked")
+    texts = CARD_TEXTS.get(lang) or CARD_TEXTS["en"]
+    # picked can be None when the overview line didn't parse (e.g. new
+    # language); fall back to the real item count so the button/subtitle
+    # always show a number.
+    picked = parsed.get("picked") or sum(len(s["items"]) for s in sections)
     title_base = LANG_TITLES.get(lang, "Horizon Daily")
 
     body: list[dict] = [
@@ -133,16 +169,19 @@ def build_card(
             "weight": "Bolder",
         }
     ]
-    if total is not None and picked is not None:
-        body.append(
-            {
-                "type": "TextBlock",
-                "text": f"今日从 {total} 条源数据中精选出 {picked} 条重要资讯",
-                "isSubtle": True,
-                "size": "Small",
-                "spacing": "Small",
-            }
-        )
+    if total is not None:
+        subtitle = texts["subtitle"].format(total=total, picked=picked)
+    else:
+        subtitle = texts["subtitle_no_total"].format(picked=picked)
+    body.append(
+        {
+            "type": "TextBlock",
+            "text": subtitle,
+            "isSubtle": True,
+            "size": "Small",
+            "spacing": "Small",
+        }
+    )
 
     # One section per category, in report order, all items (top>0 truncates).
     for i, s in enumerate(sections):
@@ -152,13 +191,16 @@ def build_card(
         for it in items:
             body.append(_item_row(it["score"], it["title"], it["url"]))
 
-    # Footer: per-category counts
-    counts = " · ".join(f"{s['name']} ({len(s['items'])}篇)" for s in sections)
+    # Footer: per-category counts (native counter unit per language)
+    unit = texts["count_unit"]
+    counts = " · ".join(
+        f"{s['name']} ({len(s['items'])}{unit})" for s in sections
+    )
     if counts:
         body.append(
             {
                 "type": "TextBlock",
-                "text": f"📊 包含分类: {counts}",
+                "text": texts["footer"].format(counts=counts),
                 "isSubtle": True,
                 "size": "Small",
                 "spacing": "Extra",
@@ -166,7 +208,7 @@ def build_card(
         )
 
     report_url = f"{viewer_base.rstrip('/')}/#/horizon-{date}-{lang}.md"
-    button_text = f"👉 点击查看今日 {picked if picked is not None else ''} 篇完整报告".strip()
+    button_text = texts["button"].format(picked=picked)
 
     return {
         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
