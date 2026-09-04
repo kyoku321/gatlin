@@ -258,5 +258,9 @@
       }
     },
     "headers": ""
+  },
+  "teams": {
+    "viewer_base_url": "https://your-viewer-host.example.com",
+    "webhook_url_env": "HORIZON_TEAMS_WEBHOOK_URL"
   }
 }

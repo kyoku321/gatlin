@@ -108,6 +108,10 @@ kubectl logs -f job/gatlin-cron-manual-1
   PVC 里的 `config.json`、`x_cookies_*.json` 等文件物理不可达
 - 页面为单文件 SPA：`fetch` 目录列表 → 按日期×语言分组 → 点击用浏览器端 marked 渲染
 - `--date` 取 `date -u -d yesterday +%F`，与 horizon `--date` 的 UTC 语义一致
+- 日报写完后同一 pod 继续执行：`horizon --json` 把每种语言的 md 转成 Teams
+  Adaptive Card JSON（存 `data/teams/`），再 `horizon --trigger` 发到 webhook
+  （webhook URL 来自环境变量 `HORIZON_TEAMS_WEBHOOK_URL`，报告链接来自
+  config.json 的 `teams.viewer_base_url`）
 
 ## 卸载
 

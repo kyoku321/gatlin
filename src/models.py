@@ -544,6 +544,26 @@ class WebhookConfig(BaseModel):
         return v
 
 
+class TeamsConfig(BaseModel):
+    """Teams Adaptive Card notification for daily summary cards.
+
+    Used by the ``horizon --json`` / ``horizon --trigger`` CLI options:
+    ``viewer_base_url`` builds the report links, and ``webhook_url_env``
+    names the environment variable holding the webhook URL (the URL
+    itself is a secret and never lives in config.json).
+    """
+
+    viewer_base_url: Optional[str] = None
+    webhook_url_env: Optional[str] = "HORIZON_TEAMS_WEBHOOK_URL"
+
+    @field_validator("webhook_url_env")
+    @classmethod
+    def validate_webhook_url_env(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", v):
+            raise ValueError(f"teams.webhook_url_env must be a valid env var name, got {v!r}")
+        return v
+
+
 class EmailConfig(BaseModel):
     """Email configuration for updates/subscriptions."""
 
@@ -639,3 +659,4 @@ class Config(BaseModel):
     extractors: Dict[str, ExtractorConfig] = Field(default_factory=dict)
     email: Optional[EmailConfig] = None
     webhook: Optional[WebhookConfig] = None
+    teams: Optional[TeamsConfig] = None

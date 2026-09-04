@@ -2,6 +2,9 @@
 
 import argparse
 import asyncio
+import json
+import os
+import re
 import shlex
 import sys
 from datetime import datetime
@@ -15,6 +18,14 @@ from .console_icons import get_icons
 from .logging_config import configure_logging
 from .storage.manager import ConfigError, StorageManager
 from .orchestrator import HorizonOrchestrator
+from .teams.card import (
+    DEFAULT_WEBHOOK_ENV,
+    build_card,
+    is_success,
+    normalize_card,
+    parse_summary,
+    post_card,
+)
 
 
 console = Console(stderr=True)
@@ -59,6 +70,48 @@ def main():
         action="store_true",
         help="Send webhook notifications in --date backfill mode",
     )
+    parser.add_argument(
+        "--json",
+        dest="json_md",
+        metavar="MARKDOWN_PATH",
+        help=(
+            "Convert a daily summary markdown file into a Teams Adaptive Card "
+            "JSON file and exit (no pipeline run). Default output: "
+            "<data-dir>/teams/<name>.json"
+        ),
+    )
+    parser.add_argument(
+        "--output",
+        metavar="PATH",
+        help="Output path for --json (default: <data-dir>/teams/<name>.json)",
+    )
+    parser.add_argument(
+        "--viewer-base",
+        metavar="URL",
+        help="Viewer base URL for report links (default: teams.viewer_base_url from config)",
+    )
+    parser.add_argument(
+        "--lang",
+        metavar="LANG",
+        help="Language code for --json (default: inferred from the file name)",
+    )
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Max items per category for --json (default: all)",
+    )
+    parser.add_argument(
+        "--trigger",
+        nargs="+",
+        metavar="VALUE",
+        help=(
+            "POST a Teams Adaptive Card JSON file to a webhook and exit: "
+            "<card_json> [webhook_url]. The webhook URL defaults to the env "
+            f"var named by teams.webhook_url_env (default ${DEFAULT_WEBHOOK_ENV})"
+        ),
+    )
     add_data_dir_arguments(parser)
     add_log_level_argument(parser)
     args = parser.parse_args()
@@ -76,6 +129,15 @@ def main():
                 "[bold red]--date and --hours are mutually exclusive[/bold red]"
             )
             sys.exit(1)
+
+    if args.json_md is not None or args.trigger is not None:
+        if args.date is not None or args.hours is not None:
+            console.print(
+                "[bold red]--json/--trigger are file operations and cannot be "
+                "combined with --date/--hours[/bold red]"
+            )
+            sys.exit(1)
+        sys.exit(_run_teams_command(args, icons))
 
     configure_logging(console, level=args.log_level)
 
@@ -144,6 +206,115 @@ def main():
         console.print(f"\n[bold red]{icons['error']} Fatal error: {e}[/bold red]")
         console.print_exception()
         sys.exit(1)
+
+
+def _run_teams_command(args, icons) -> int:
+    """Handle ``horizon --json`` / ``horizon --trigger`` without running the pipeline."""
+    load_dotenv()
+    data_dir = Path(args.data_dir)
+
+    # Config supplies defaults (viewer base URL, webhook env var name).
+    # A missing default config is only fatal when explicitly requested.
+    try:
+        config = StorageManager(data_dir=str(data_dir), config_path=args.config).load_config()
+    except FileNotFoundError:
+        if args.config is not None:
+            console.print(
+                f"[bold red]{icons['error']} Configuration file not found: {args.config}[/bold red]\n"
+            )
+            return 1
+        config = None
+    except Exception as e:
+        console.print(
+            f"[bold red]{icons['error']} Error loading configuration: {e}[/bold red]\n"
+        )
+        return 1
+    teams_cfg = config.teams if config is not None else None
+
+    exit_code = 0
+    if args.json_md is not None:
+        exit_code = _teams_json(args, data_dir, teams_cfg, icons)
+    if exit_code == 0 and args.trigger is not None:
+        exit_code = _teams_trigger(args, teams_cfg, icons)
+    return exit_code
+
+
+def _teams_json(args, data_dir: Path, teams_cfg, icons) -> int:
+    """Convert a summary markdown file into a Teams Adaptive Card JSON file."""
+    md_path = Path(args.json_md)
+    if not md_path.is_file():
+        console.print(f"[bold red]{icons['error']} markdown not found: {md_path}[/bold red]")
+        return 1
+    viewer_base = args.viewer_base or (teams_cfg.viewer_base_url if teams_cfg else None)
+    if not viewer_base:
+        console.print(
+            "[bold red]no viewer base URL: pass --viewer-base or set "
+            "teams.viewer_base_url in the config[/bold red]"
+        )
+        return 2
+    lang = args.lang
+    if not lang:
+        m = re.search(r"horizon-\d{4}-\d{2}-\d{2}-([a-z]{2,3})\.md$", md_path.name)
+        if not m:
+            console.print(
+                "[bold red]cannot infer --lang from file name; pass --lang explicitly[/bold red]"
+            )
+            return 2
+        lang = m.group(1)
+
+    md = md_path.read_text(encoding="utf-8")
+    parsed = parse_summary(md)
+    if not parsed["sections"]:
+        console.print("[bold red]no ## sections with items found in markdown[/bold red]")
+        return 2
+    card = build_card(parsed, viewer_base, lang, top=args.top)
+
+    out = Path(args.output) if args.output else data_dir / "teams" / (md_path.stem + ".json")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(card, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    n_items = sum(len(s["items"]) for s in parsed["sections"])
+    console.print(
+        f"[green]{icons['success']} wrote Teams adaptive card: {out} "
+        f"({len(parsed['sections'])} categories, {n_items} items)[/green]"
+    )
+    return 0
+
+
+def _teams_trigger(args, teams_cfg, icons) -> int:
+    """POST a Teams Adaptive Card JSON file to a webhook."""
+    values = args.trigger
+    if len(values) not in (1, 2):
+        console.print("[bold red]--trigger expects <card_json> [webhook_url][/bold red]")
+        return 2
+    json_path = Path(values[0])
+    if not json_path.is_file():
+        console.print(f"[bold red]{icons['error']} card JSON not found: {json_path}[/bold red]")
+        return 1
+    try:
+        card = normalize_card(json.loads(json_path.read_text(encoding="utf-8")))
+    except (json.JSONDecodeError, ValueError) as e:
+        console.print(f"[bold red]invalid card JSON: {e}[/bold red]")
+        return 1
+
+    webhook = values[1] if len(values) == 2 else None
+    if not webhook:
+        env_name = (teams_cfg.webhook_url_env if teams_cfg else None) or DEFAULT_WEBHOOK_ENV
+        webhook = os.environ.get(env_name)
+        if not webhook:
+            console.print(
+                f"[yellow]{icons['warning']} no webhook URL (pass it as the second --trigger "
+                f"arg or set ${env_name}); skipping send[/yellow]"
+            )
+            return 0
+
+    resp = post_card(card, webhook)
+    if is_success(resp.status_code):
+        console.print(f"[green]{icons['success']} sent card to webhook (HTTP {resp.status_code})[/green]")
+        return 0
+    console.print(
+        f"[bold red]{icons['error']} webhook returned HTTP {resp.status_code}: {resp.text[:300]}[/bold red]"
+    )
+    return 1
 
 
 def print_config_template():

@@ -27,9 +27,20 @@ spec:
               # compute yesterday's UTC date (matches the --date UTC semantics).
               # chmod keeps summaries world-readable so the viewer pod's
               # non-root nginx worker can serve them (also repairs any legacy 600 files).
+              # After the report is written, each language is converted to a
+              # Teams Adaptive Card (--json) and sent to the webhook
+              # (--trigger; URL comes from $HORIZON_TEAMS_WEBHOOK_URL, viewer
+              # links from teams.viewer_base_url in config.json).
               command: ["/bin/sh", "-c"]
               args:
-                - uv run horizon --date "$(date -u -d yesterday +%F)" && chmod -R a+rX /app/data/summaries
+                - >-
+                  D=$(date -u -d yesterday +%F) &&
+                  uv run horizon --date "$D" &&
+                  chmod -R a+rX /app/data/summaries &&
+                  uv run horizon --json "data/summaries/horizon-$D-zh.md" &&
+                  uv run horizon --trigger "data/teams/horizon-$D-zh.json" &&
+                  uv run horizon --json "data/summaries/horizon-$D-ja.md" &&
+                  uv run horizon --trigger "data/teams/horizon-$D-ja.json"
               resources:
                 {{- toYaml .Values.cron.resources | nindent 16 }}
               volumeMounts:
