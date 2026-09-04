@@ -7,6 +7,7 @@
 
   var content = document.getElementById('content');
   var fileCache = null; // name list, fetched once
+  var inArticle = false; // true while a report (not the list) is on screen
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -49,6 +50,7 @@
   }
 
   function renderList(groups) {
+    inArticle = false;
     if (!groups.length) {
       content.innerHTML =
         '<div class="empty">' +
@@ -140,6 +142,7 @@
   }
 
   function renderArticle(name) {
+    inArticle = true;
     content.innerHTML = '<p class="loading">加载中…</p>';
     fetch('/summaries/' + encodeURIComponent(name), { cache: 'no-store' })
       .then(function (res) {
@@ -160,7 +163,11 @@
     window.scrollTo(0, 0);
   }
 
-  /* ===== Hash routing ===== */
+  /* ===== Hash routing =====
+     The hash is either a report file ("#/horizon-….md") or an in-page anchor
+     inside a rendered report ("#item-tech-news-1" from the TOC). Anchor hashes
+     are handled natively by the browser — never hijack them, or the click
+     would bounce back to the list page. */
 
   function route() {
     var hash = window.location.hash.replace(/^#\/?/, '');
@@ -170,9 +177,13 @@
     } catch (e) {
       name = '';
     }
-    if (name && FILE_RE.test(name)) {
+    if (FILE_RE.test(name)) {
       renderArticle(name);
-    } else {
+      return;
+    }
+    if (!hash || !inArticle) {
+      // No hash, or a non-report hash while the list is shown (e.g. a shared
+      // anchor link opened cold — nothing to scroll to yet): show the list.
       document.title = 'Horizon 毎日速報';
       fetchList()
         .then(function (list) {
@@ -182,6 +193,7 @@
           content.innerHTML = '<p class="error">加载列表失败：' + esc(e.message) + '</p>';
         });
     }
+    // else: in-page anchor in article view → let the browser scroll.
   }
 
   window.addEventListener('hashchange', route);
