@@ -43,9 +43,9 @@ spec:
                   uv run horizon --date "$D" &&
                   chmod -R a+rX /app/data/summaries &&
                   uv run horizon --json "data/summaries/horizon-$D-zh.md" &&
-                  uv run horizon --trigger "data/teams/horizon-$D-zh.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_ZH &&
-                  uv run horizon --json "data/summaries/horizon-$D-ja.md" &&
-                  uv run horizon --trigger "data/teams/horizon-$D-ja.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_JA
+                  uv run horizon --trigger "data/teams/horizon-$D-zh.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_ZH
+                  # uv run horizon --json "data/summaries/horizon-$D-ja.md" &&
+                  # uv run horizon --trigger "data/teams/horizon-$D-ja.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_JA
               resources:
                 {{- toYaml .Values.cron.resources | nindent 16 }}
               volumeMounts:
