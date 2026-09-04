@@ -23,8 +23,13 @@ spec:
             - name: cron
               image: "{{ .Values.cron.image.repository }}:{{ .Values.cron.image.tag }}"
               imagePullPolicy: {{ .Values.cron.image.pullPolicy }}
+              env:
+                # Container clock / shell date / python logs in Japan time.
+                - name: TZ
+                  value: Asia/Tokyo
               # The image entrypoint is `uv run horizon`; re-run it via sh to
-              # compute yesterday's UTC date (matches the --date UTC semantics).
+              # compute yesterday's JST date (the cron runs at 21:00 JST and
+              # digests the previous Asia/Tokyo calendar day).
               # chmod keeps summaries world-readable so the viewer pod's
               # non-root nginx worker can serve them (also repairs any legacy 600 files).
               # After the report is written, each language is converted to a
@@ -34,7 +39,7 @@ spec:
               command: ["/bin/sh", "-c"]
               args:
                 - >-
-                  D=$(date -u -d yesterday +%F) &&
+                  D=$(TZ=Asia/Tokyo date -d yesterday +%F) &&
                   uv run horizon --date "$D" &&
                   chmod -R a+rX /app/data/summaries &&
                   uv run horizon --json "data/summaries/horizon-$D-zh.md" &&

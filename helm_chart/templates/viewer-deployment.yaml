@@ -18,6 +18,11 @@ spec:
         - name: viewer
           image: "{{ .Values.viewer.image.repository }}:{{ .Values.viewer.image.tag }}"
           imagePullPolicy: {{ .Values.viewer.image.pullPolicy }}
+          env:
+            # Access-log timestamps in Japan time (nginx:1.28-alpine ships
+            # without tzdata; the image adds it).
+            - name: TZ
+              value: Asia/Tokyo
           ports:
             - containerPort: {{ .Values.viewer.containerPort }}
           readinessProbe:

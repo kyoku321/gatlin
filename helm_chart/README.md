@@ -2,7 +2,7 @@
 
 在 Kubernetes 上部署 Gatlin（Horizon）日报系统，包含两个主要资源：
 
-1. **CronJob** — 每天运行 `horizon --date <UTC 前一天>`，日报写入 PVC 上的 `data/summaries/`
+1. **CronJob** — 每天 21:00（JST）运行 `horizon --date <JST 前一天>`，日报写入 PVC 上的 `data/summaries/`
 2. **Viewer** — nginx Deployment + Ingress，只读展示 `data/summaries/` 下的 Markdown 日报
 
 设计文档：[`docs/plans/2026-09-03-helm-chart-design.md`](../docs/plans/2026-09-03-helm-chart-design.md)
@@ -92,7 +92,7 @@ kubectl logs -f job/gatlin-cron-manual-1
 
 | Key | 默认值 | 说明 |
 |-----|--------|------|
-| `cron.schedule` | `"0 4 * * *"` | 每天运行时间 |
+| `cron.schedule` | `"0 21 * * *"` | 每天运行时间（按 `cron.timeZone` 解释） |
 | `cron.timeZone` | `Asia/Tokyo` | schedule 时区（K8s 1.26+） |
 | `persistence.storageClass` | `basic` | 需支持 ReadWriteMany |
 | `persistence.size` | `5Gi` | 日报 + seen.json 等状态数据 |
@@ -107,7 +107,9 @@ kubectl logs -f job/gatlin-cron-manual-1
 - nginx 仅放行 `/summaries/`（JSON 目录列表）与 `/summaries/<单段文件名>.md`，
   PVC 里的 `config.json`、`x_cookies_*.json` 等文件物理不可达
 - 页面为单文件 SPA：`fetch` 目录列表 → 按日期×语言分组 → 点击用浏览器端 marked 渲染
-- `--date` 取 `date -u -d yesterday +%F`，与 horizon `--date` 的 UTC 语义一致
+- 时区统一 JST：两个容器都注入 `TZ=Asia/Tokyo`（cron 镜像自带 tzdata，
+  viewer 的 alpine 镜像里装了 tzdata）；`D=$(TZ=Asia/Tokyo date -d yesterday +%F)`
+  取 JST 前一天，与 21:00 JST 的调度语义一致
 - 日报写完后同一 pod 继续执行：`horizon --json` 把每种语言的 md 转成 Teams
   Adaptive Card JSON（存 `data/teams/`），再 `horizon --trigger` 发到 webhook
   （webhook URL 来自环境变量 `HORIZON_TEAMS_WEBHOOK_URL`，报告链接来自

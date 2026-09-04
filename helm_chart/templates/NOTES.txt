@@ -15,7 +15,7 @@ Viewer:
 Cron:
   * Schedule: {{ .Values.cron.schedule }} ({{ .Values.cron.timeZone }})
   * Inspect:  kubectl cronjob get {{ .Release.Name }}-cron -o wide
-  * Trigger the first run now (writes yesterday's UTC digest):
+  * Trigger the first run now (writes the previous Asia/Tokyo day's digest):
       kubectl create job --from=cronjob/{{ .Release.Name }}-cron {{ .Release.Name }}-cron-manual-1
   * Follow logs:
       kubectl logs -f job/{{ .Release.Name }}-cron-manual-1
