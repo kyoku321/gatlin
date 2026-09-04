@@ -175,6 +175,59 @@ def test_trigger_posts_card_to_explicit_webhook(monkeypatch, tmp_path):
     assert card["type"] == "AdaptiveCard"
 
 
+def test_trigger_uses_webhook_env_option(monkeypatch, tmp_path):
+    _mute(monkeypatch)
+    sent = []
+
+    def fake_post(card, url, timeout=30.0):
+        sent.append((card, url))
+        return SimpleNamespace(status_code=202, text="")
+
+    monkeypatch.setattr(main_module, "post_card", fake_post)
+    monkeypatch.setenv("HORIZON_TEAMS_WEBHOOK_URL_JA", "https://ja-webhook.example.com/x")
+    monkeypatch.delenv("HORIZON_TEAMS_WEBHOOK_URL", raising=False)
+    card_path = tmp_path / "card.json"
+    card_path.write_text(json.dumps({"type": "AdaptiveCard", "body": []}), encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        ["horizon", "--trigger", str(card_path),
+         "--webhook-env", "HORIZON_TEAMS_WEBHOOK_URL_JA"],
+    )
+
+    with pytest.raises(SystemExit) as exc:
+        main_module.main()
+
+    assert exc.value.code == 0
+    assert sent[0][1] == "https://ja-webhook.example.com/x"
+
+
+def test_trigger_explicit_url_wins_over_webhook_env(monkeypatch, tmp_path):
+    _mute(monkeypatch)
+    sent = []
+
+    def fake_post(card, url, timeout=30.0):
+        sent.append((card, url))
+        return SimpleNamespace(status_code=200, text="")
+
+    monkeypatch.setattr(main_module, "post_card", fake_post)
+    monkeypatch.setenv("HORIZON_TEAMS_WEBHOOK_URL_JA", "https://env.example.com/x")
+    card_path = tmp_path / "card.json"
+    card_path.write_text(json.dumps({"type": "AdaptiveCard", "body": []}), encoding="utf-8")
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "horizon", "--trigger", str(card_path), "https://explicit.example.com/x",
+            "--webhook-env", "HORIZON_TEAMS_WEBHOOK_URL_JA",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as exc:
+        main_module.main()
+
+    assert exc.value.code == 0
+    assert sent[0][1] == "https://explicit.example.com/x"
+
+
 def test_trigger_http_failure_exits_nonzero(monkeypatch, tmp_path):
     _mute(monkeypatch)
     md = _write_md(tmp_path)

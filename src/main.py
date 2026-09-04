@@ -112,6 +112,16 @@ def main():
             f"var named by teams.webhook_url_env (default ${DEFAULT_WEBHOOK_ENV})"
         ),
     )
+    parser.add_argument(
+        "--webhook-env",
+        metavar="ENV_NAME",
+        default=None,
+        help=(
+            "Environment variable holding the webhook URL for --trigger "
+            "(e.g. per-language webhooks). Takes precedence over "
+            "teams.webhook_url_env; an explicit webhook_url argument still wins."
+        ),
+    )
     add_data_dir_arguments(parser)
     add_log_level_argument(parser)
     args = parser.parse_args()
@@ -297,6 +307,8 @@ def _teams_trigger(args, teams_cfg, icons) -> int:
         return 1
 
     webhook = values[1] if len(values) == 2 else None
+    if not webhook and args.webhook_env:
+        webhook = os.environ.get(args.webhook_env)
     if not webhook:
         env_name = (teams_cfg.webhook_url_env if teams_cfg else None) or DEFAULT_WEBHOOK_ENV
         webhook = os.environ.get(env_name)
