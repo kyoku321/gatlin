@@ -40,9 +40,9 @@ OVERVIEW_RE_JA = re.compile(r"^> +.*?(\d+)\s*件.*?(\d+)\s*件", re.MULTILINE)
 DATE_RE = re.compile(r"^# +.+?\s*-\s*(\d{4}-\d{2}-\d{2})\s*$", re.MULTILINE)
 
 LANG_TITLES = {
-    "zh": "Horizon 每日速递",
-    "ja": "Horizon 毎日速報",
-    "en": "Horizon Daily",
+    "zh": "每日速递",
+    "ja": "毎日速報",
+    "en": "Daily",
 }
 
 CATEGORY_ICONS = {
@@ -159,7 +159,7 @@ def build_card(
     # language); fall back to the real item count so the button/subtitle
     # always show a number.
     picked = parsed.get("picked") or sum(len(s["items"]) for s in sections)
-    title_base = LANG_TITLES.get(lang, "Horizon Daily")
+    title_base = LANG_TITLES.get(lang, "Daily")
 
     body: list[dict] = [
         {

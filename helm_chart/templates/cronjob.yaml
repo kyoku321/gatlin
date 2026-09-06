@@ -36,16 +36,20 @@ spec:
               # Teams Adaptive Card (--json) and sent to its own webhook
               # (--trigger --webhook-env HORIZON_TEAMS_WEBHOOK_URL_ZH / _JA;
               # viewer links come from teams.viewer_base_url in config.json).
+              # NOTE: args is a folded scalar (`>-`) joined into ONE line, so
+              # `#` here would comment out the rest of the shell command —
+              # never write commented-out commands inside this block.
+              # ZH Teams push is disabled for now; when re-enabling add:
+              #   uv run horizon --json "data/summaries/horizon-$D-zh.md" &&
+              #   uv run horizon --trigger "data/teams/horizon-$D-zh.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_ZH &&
               command: ["/bin/sh", "-c"]
               args:
                 - >-
                   D=$(TZ=Asia/Tokyo date -d yesterday +%F) &&
                   uv run horizon --date "$D" &&
                   chmod -R a+rX /app/data/summaries &&
-                  uv run horizon --json "data/summaries/horizon-$D-zh.md" &&
-                  uv run horizon --trigger "data/teams/horizon-$D-zh.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_ZH
-                  # uv run horizon --json "data/summaries/horizon-$D-ja.md" &&
-                  # uv run horizon --trigger "data/teams/horizon-$D-ja.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_JA
+                  uv run horizon --json "data/summaries/horizon-$D-ja.md" &&
+                  uv run horizon --trigger "data/teams/horizon-$D-ja.json" --webhook-env HORIZON_TEAMS_WEBHOOK_URL_JA
               resources:
                 {{- toYaml .Values.cron.resources | nindent 16 }}
               volumeMounts:

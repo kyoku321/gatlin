@@ -886,7 +886,7 @@ class TestSendDailySummary:
             mock_notify.assert_called_once()
             vars = mock_notify.call_args[0][0]
             assert vars["message_kind"] == "summary"
-            assert vars["message_title"] == "Horizon 2026-04-24 Daily"
+            assert vars["message_title"] == "2026-04-24 Daily"
             assert vars["summary"] == summary
             assert vars["important_items"] == 1
             assert vars["all_items"] == 10
@@ -918,7 +918,7 @@ class TestSendDailySummary:
                 )
             )
             vars = mock_notify.call_args[0][0]
-            assert vars["message_title"] == "Horizon 2026-04-24 日报"
+            assert vars["message_title"] == "2026-04-24 日报"
             assert vars["language"] == "zh"
         del os.environ[_TEST_URL_ENV]
 
@@ -1818,9 +1818,9 @@ class TestFeishuCollapsibleJapanese:
     def test_title_ja(self):
         from src.services.webhook import _feishu_collapsible_title
 
-        assert _feishu_collapsible_title("2026-04-25", "ja") == "Horizon 2026-04-25 折りたたみ日報"
-        assert _feishu_collapsible_title("2026-04-25", "zh") == "Horizon 2026-04-25 折叠日报"
-        assert _feishu_collapsible_title("2026-04-25", "en") == "Horizon 2026-04-25 Collapsible Daily"
+        assert _feishu_collapsible_title("2026-04-25", "ja") == "2026-04-25 折りたたみ日報"
+        assert _feishu_collapsible_title("2026-04-25", "zh") == "2026-04-25 折叠日报"
+        assert _feishu_collapsible_title("2026-04-25", "en") == "2026-04-25 Collapsible Daily"
 
     def test_overview_ja(self, monkeypatch):
         from src.services.webhook import WebhookNotifier
