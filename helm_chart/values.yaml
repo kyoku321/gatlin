@@ -29,8 +29,13 @@ viewer:
     requests:
       memory: "64Mi"
       cpu: "50m"
+    # nginx's `worker_processes auto` (the nginx image default) forks one worker
+    # per visible CPU. On a 224-CPU node that is ~224 workers, measured at
+    # ~174MiB idle / ~202MiB peak — well past the old 128Mi limit, which got the
+    # container OOMKilled before its probes could pass. 512Mi leaves headroom for
+    # larger nodes (1024Mi would be needed beyond ~1000 CPUs).
     limits:
-      memory: "128Mi"
+      memory: "512Mi"
       cpu: "200m"
 
 persistence:

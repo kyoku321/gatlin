@@ -54,13 +54,13 @@
     if (!groups.length) {
       content.innerHTML =
         '<div class="empty">' +
-        '<h1>Horizon 毎日速報</h1>' +
+        '<h1>毎日速報</h1>' +
         '<p>暂无内容</p>' +
         '<p class="muted">等待 CronJob 生成首期日报后，内容会自动出现在这里。</p>' +
         '</div>';
       return;
     }
-    var html = '<h1>Horizon 毎日速報</h1><ul class="date-list">';
+    var html = '<h1>毎日速報</h1><ul class="date-list">';
     groups.forEach(function (g) {
       html += '<li class="date-row"><span class="date">' + esc(g.date) + '</span><span class="lang-chips">';
       Object.keys(g.langs)
@@ -184,7 +184,7 @@
     if (!hash || !inArticle) {
       // No hash, or a non-report hash while the list is shown (e.g. a shared
       // anchor link opened cold — nothing to scroll to yet): show the list.
-      document.title = 'Horizon 毎日速報';
+      document.title = '毎日速報';
       fetchList()
         .then(function (list) {
           renderList(groupByDate(list));
