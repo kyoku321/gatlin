@@ -1,0 +1,306 @@
+{
+  "ai": {
+    "provider": "ollama",
+    "provider_chain": null,
+    "model": "/models/Qwen3.8-27B",
+    "base_url": "https://aggpf-qwen38.gpu-k8s.cloudcore-tu.net/v1",
+    "api_key_env": "null",
+    "temperature": 0.3,
+    "max_tokens": 8192,
+    "enable_thinking": false,
+    "throttle_sec": 0.0,
+    "analysis_concurrency": 1,
+    "enrichment_concurrency": 1,
+    "languages": [
+      "zh",
+      "jp"
+    ],
+    "azure_endpoint_env": null,
+    "api_version": null
+  },
+  "sources": {
+    "github": [],
+    "hackernews": {
+      "enabled": true,
+      "fetch_top_stories": 30,
+      "min_score": 100,
+      "category": null,
+      "profile": null
+    },
+    "rss": [
+      {
+        "name": "OpenAI News",
+        "url": "https://openai.com/news/rss.xml",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Google DeepMind",
+        "url": "https://deepmind.google/blog/rss.xml",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Google AI Blog",
+        "url": "https://blog.google/innovation-and-ai/technology/ai/rss/",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Hugging Face Blog",
+        "url": "https://huggingface.co/blog/feed.xml",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Mistral AI",
+        "url": "https://mistral.ai/news/rss",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "TechCrunch AI",
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "NVIDIA Blog",
+        "url": "https://blogs.nvidia.com/feed/",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "The Verge - AI",
+        "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Arstechnica AI",
+        "url": "https://arstechnica.com/ai/feed/",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "MIT Technology Review - AI",
+        "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Ben's Bites",
+        "url": "https://www.bensbites.com/feed",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "Last Week in AI",
+        "url": "https://lastweekin.ai/feed",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "arXiv cs.CL",
+        "url": "https://export.arxiv.org/rss/cs.CL",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "arXiv cs.CV",
+        "url": "https://export.arxiv.org/rss/cs.CV",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "arXiv cs.LG",
+        "url": "https://export.arxiv.org/rss/cs.LG",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      },
+      {
+        "name": "arXiv cs.AI",
+        "url": "https://export.arxiv.org/rss/cs.AI",
+        "enabled": true,
+        "category": "AI",
+        "content_extractor": null,
+        "profile": null
+      }
+    ],
+    "reddit": {
+      "enabled": false,
+      "subreddits": [
+        {
+          "subreddit": "telecom",
+          "enabled": true,
+          "sort": "hot",
+          "time_filter": "day",
+          "fetch_limit": 15,
+          "min_score": 3,
+          "category": null,
+          "profile": null
+        },
+        {
+          "subreddit": "5G",
+          "enabled": true,
+          "sort": "hot",
+          "time_filter": "day",
+          "fetch_limit": 15,
+          "min_score": 3,
+          "category": null,
+          "profile": null
+        },
+        {
+          "subreddit": "IoT",
+          "enabled": true,
+          "sort": "hot",
+          "time_filter": "day",
+          "fetch_limit": 15,
+          "min_score": 15,
+          "category": null,
+          "profile": null
+        },
+        {
+          "subreddit": "esim",
+          "enabled": true,
+          "sort": "hot",
+          "time_filter": "day",
+          "fetch_limit": 15,
+          "min_score": 2,
+          "category": null,
+          "profile": null
+        }
+      ],
+      "users": [],
+      "fetch_comments": 10
+    },
+    "telegram": {
+      "enabled": false,
+      "channels": []
+    },
+    "twitter": null,
+    "openbb": null,
+    "ossinsight": {
+      "enabled": false,
+      "period": "past_24_hours",
+      "languages": [
+        "All",
+        "Python",
+        "TypeScript"
+      ],
+      "keywords": [],
+      "min_stars": 5,
+      "max_items": 30,
+      "category": null,
+      "profile": null
+    },
+    "gdelt": null,
+    "google_news": {
+      "enabled": false,
+      "query": "(\"KDDI\" OR \"SoftBank\" OR \"NTT DOCOMO\" OR \"Rakuten Mobile\" OR \"Transatel\" OR \"Verizon\" OR \"AT&T\" OR \"T-Mobile US\" OR \"Deutsche Telekom\" OR \"Vodafone\" OR \"Orange\" OR \"SK Telecom\" OR \"MVNO\")",
+      "language": "ja",
+      "country": "JP",
+      "ceid": null,
+      "max_results": 60,
+      "category": "company",
+      "profile": null
+    }
+  },
+  "collection": {
+    "time_window_hours": 24
+  },
+  "digest": {
+    "max_items": null,
+    "category_groups": {},
+    "default_group": "other",
+    "default_group_limit": null,
+    "profile_order": [
+      "finance-news",
+      "tech-news",
+      "tech-blog",
+      "ai-creator",
+      "telecom-news",
+      "esim",
+      "ntn",
+      "automotive"
+    ]
+  },
+  "processing": {
+    "profiles_dir": "profiles",
+    "default_profile": "tech-news",
+    "profile_settings": {
+      "telecom-news": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "esim": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "ntn": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "automotive": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "tech-news": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "finance-news": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "tech-blog": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      },
+      "ai-creator": {
+        "threshold": 5.0,
+        "topic_dedup": true
+      }
+    }
+  },
+  "display": {
+    "icon_style": "emoji"
+  },
+  "extractors": {},
+  "email": null,
+  "webhook": null,
+  "teams": {
+    "viewer_base_url": "https://aggpf-gatlin-ai.gpu-k8s.cloudcore-tu.net",
+    "webhook_url_env": "HORIZON_TEAMS_WEBHOOK_URL_ZH"
+  }
+}

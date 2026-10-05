@@ -44,6 +44,14 @@ helm install gatlin ./helm_chart -n ug-aggpf-common \
 helm upgrade gatlin ./helm_chart -n ug-aggpf-common \
   --set-file secrets.env=.env \
   --set-file secrets.configJson=data/config.json
+
+
+# AI
+helm install gatlin-ai ./helm_chart -n ug-aggpf-common -f ./helm_chart/values_ai.yaml \
+  --set-file secrets.env=.env \
+  --set-file secrets.configJson=data/config_ai.json
+
+
 ```
 
 ### 方式 B：手写 values 文件
@@ -77,6 +85,7 @@ PVC 初始为空，页面会显示“暂无内容”，先手动跑一次：
 
 ```bash
 kubectl create job --from=cronjob/gatlin-cron gatlin-cron-manual-1
+kubectl create job --from=cronjob/gatlin-ai-cron gatlin-ai-cron-manual-1
 kubectl logs -f job/gatlin-cron-manual-1
 ```
 
