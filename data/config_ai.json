@@ -2,8 +2,8 @@
   "ai": {
     "provider": "ollama",
     "provider_chain": null,
-    "model": "/models/Qwen3.8-27B",
-    "base_url": "https://aggpf-qwen38.gpu-k8s.cloudcore-tu.net/v1",
+    "model": "/Qwen/Qwen3.8-27B",
+    "base_url": "https://aggpf-qwen.gpu-k8s.cloudcore-tu.net/v1",
     "api_key_env": "null",
     "temperature": 0.3,
     "max_tokens": 8192,
